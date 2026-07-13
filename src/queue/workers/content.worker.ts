@@ -24,7 +24,6 @@ const worker = new Worker<GenerateContentJobData>(
 );
 
 worker.on("completed", (job, result) => {
-  // eslint-disable-next-line no-console
   console.log(`[worker] job ${job.id} concluído`, result);
 });
 
@@ -39,7 +38,6 @@ worker.on("failed", async (job, error) => {
   const isFinalAttempt = job.attemptsMade >= maxAttempts;
 
   if (!isFinalAttempt) {
-    // eslint-disable-next-line no-console
     console.warn(
       `[worker] job ${job.id} falhou na tentativa ${job.attemptsMade}/${maxAttempts}, vai tentar novamente:`,
       error.message
@@ -48,7 +46,6 @@ worker.on("failed", async (job, error) => {
   }
 
   const { contentId, userId } = job.data;
-  // eslint-disable-next-line no-console
   console.error(
     `[worker] job ${job.id} falhou definitivamente após ${job.attemptsMade}/${maxAttempts} tentativas:`,
     error.message
@@ -65,15 +62,12 @@ worker.on("failed", async (job, error) => {
 });
 
 worker.on("error", (error) => {
-  // eslint-disable-next-line no-console
   console.error("[worker] erro de infraestrutura:", error);
 });
 
-// eslint-disable-next-line no-console
 console.log(`[worker] escutando a fila "${CONTENT_QUEUE_NAME}" (env=${env.NODE_ENV})`);
 
 async function shutdown(): Promise<void> {
-  // eslint-disable-next-line no-console
   console.log("[worker] encerrando graciosamente...");
   await worker.close();
   process.exit(0);
