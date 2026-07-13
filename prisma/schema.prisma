@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ContentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELED
+  FAILED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  credits   Int      @default(10)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contents Content[]
+
+  @@map("users")
+}
+
+model Content {
+  id        String        @id @default(uuid())
+  userId    String
+  topic     String
+  status    ContentStatus @default(PENDING)
+  resultUrl String?
+  errorMessage String?
+
+  // Concorrência Worker vs API: quando o usuário chama /cancel,
+  // marcamos este timestamp. O worker consulta este campo (via
+  // UPDATE condicional) antes de gravar o resultado final, evitando
+  // que um job "ressuscite" um conteúdo já cancelado.
+  cancelRequestedAt DateTime?
+
+  // Otimistic locking extra: incrementado a cada transição de status
+  // relevante, usado como guarda em updates condicionais do worker.
+  version Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@map("contents")
+}
+
