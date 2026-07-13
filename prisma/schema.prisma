@@ -42,10 +42,6 @@ model Content {
   // que um job "ressuscite" um conteúdo já cancelado.
   cancelRequestedAt DateTime?
 
-  // Otimistic locking extra: incrementado a cada transição de status
-  // relevante, usado como guarda em updates condicionais do worker.
-  version Int @default(0)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
